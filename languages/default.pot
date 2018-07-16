@@ -1,0 +1,626 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: ether-and-erc20-tokens-woocommerce-payment-gateway\n"
+"POT-Creation-Date: 2018-07-04 14:03+0700\n"
+"PO-Revision-Date: 2018-03-13 09:23+0700\n"
+"Last-Translator: \n"
+"Language-Team: ethereumicoio\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.6\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: vendor\n"
+"X-Poedit-SearchPathExcluded-1: node_modules\n"
+
+#: ether-and-erc20-tokens-woocommerce-payment-gateway.php:63
+msgid "Settings"
+msgstr ""
+
+#: src/gateway.php:24 src/gateway.php:34
+msgid "Unknown network name in configuration settings"
+msgstr ""
+
+#: src/gateway.php:118 src/gateway.php:147
+#, php-format
+msgid "call contract %s method %s for market %s for order %s"
+msgstr ""
+
+#: src/gateway.php:175
+#, php-format
+msgid "call contract %s method decimals"
+msgstr ""
+
+#: src/gateway.php:218 src/gateway.php:326
+#, php-format
+msgid "Order do not need payment, tx check stopped: %s"
+msgstr ""
+
+#: src/gateway.php:232 src/gateway.php:338
+#, php-format
+msgid "Order expired: %s"
+msgstr ""
+
+#: src/gateway.php:236 src/gateway.php:342
+msgid "Order was expired."
+msgstr ""
+
+#: src/gateway.php:248
+#, php-format
+msgid "No payment found for order: %s"
+msgstr ""
+
+#: src/gateway.php:262
+#, php-format
+msgid ""
+"PaymentInfo recieved for order_id=%s. %s: %s. eth_value=%s, eth_value_wei=%s"
+msgstr ""
+
+#: src/gateway.php:292 src/gateway.php:295
+msgid "Successful payment notification received. Order updated to pending."
+msgstr ""
+
+#: src/gateway.php:301
+#, php-format
+msgid ""
+"Non-successful payment notification received. Order updated to failed: %s"
+msgstr ""
+
+#: src/gateway.php:305
+msgid "Non-successful payment notification received. Order updated to failed."
+msgstr ""
+
+#: src/gateway.php:307
+msgid "Non-successful payment notification."
+msgstr ""
+
+#: src/gateway.php:319
+#, php-format
+msgid "tx check for order: %s"
+msgstr ""
+
+#: src/gateway.php:378 src/gateway.php:691
+msgid "Pay with Ether or ERC20 token"
+msgstr ""
+
+#: src/gateway.php:467
+#, php-format
+msgid ""
+"Payment of %s ETH or an equvalent in ERC20 supported tokens will be due."
+msgstr ""
+
+#: src/gateway.php:472
+#, php-format
+msgid "Problem performing currency conversion: %s"
+msgstr ""
+
+#: src/gateway.php:479
+msgid ""
+"Unable to provide an order value in ETH at this time. Please contact support."
+msgstr ""
+
+#: src/gateway.php:496
+msgid ""
+"ETH price quote has been updated, please check and confirm before proceeding."
+msgstr ""
+
+#: src/gateway.php:521
+msgid "Enable / disable"
+msgstr ""
+
+#: src/gateway.php:522
+msgid "Enable payment with Ether or ERC20 tokens"
+msgstr ""
+
+#: src/gateway.php:530
+msgid "Basic settings"
+msgstr ""
+
+#: src/gateway.php:535
+msgid "Enable debug mode"
+msgstr ""
+
+#: src/gateway.php:536
+msgid "Enable only if you are diagnosing problems."
+msgstr ""
+
+#: src/gateway.php:538
+#, php-format
+msgid "Log interactions inside <code>%s</code>"
+msgstr ""
+
+#: src/gateway.php:542
+msgid "Title"
+msgstr ""
+
+#: src/gateway.php:544
+msgid ""
+"This controls the name of the payment option that the user sees during "
+"checkout."
+msgstr ""
+
+#: src/gateway.php:545
+msgid "Pay with ETH or ERC20 token"
+msgstr ""
+
+#: src/gateway.php:548
+msgid "Short description"
+msgstr ""
+
+#: src/gateway.php:550
+msgid ""
+"This controls the description of the payment option that the user sees "
+"during checkout."
+msgstr ""
+
+#: src/gateway.php:556
+msgid "API credentials"
+msgstr ""
+
+#: src/gateway.php:561
+msgid "Infura API Key"
+msgstr ""
+
+#: src/gateway.php:563
+#, php-format
+msgid ""
+"<p>The API key for the <a target=\"_blank\" href=\"%s\">%s</a>. You need to "
+"register on this site to obtain it.</p>"
+msgstr ""
+
+#: src/gateway.php:567
+msgid "Blockchain"
+msgstr ""
+
+#: src/gateway.php:569
+msgid ""
+"<p>The blockchain used: mainnet or ropsten. Use mainnet in production, and "
+"ropsten in test mode.</p>"
+msgstr ""
+
+#: src/gateway.php:575 src/main.php:139
+msgid "Payment details"
+msgstr ""
+
+#: src/gateway.php:580
+msgid "Your ethereum address"
+msgstr ""
+
+#: src/gateway.php:582
+msgid ""
+"The ethereum address payment should be sent to. Make sure to use one address "
+"per one online store. Do not use one address for two or more stores! Also, "
+"make sure to use a ERC20 tokens compatible wallet if you are planning to "
+"accept it!"
+msgstr ""
+
+#: src/gateway.php:586
+msgid "Supported ERC20 tokens list"
+msgstr ""
+
+#: src/gateway.php:588
+msgid ""
+"Provide a list of tokens you want to support. It should be in a format like "
+"this: Token_symbol1:token_eth_address1:token_price_eth1,Token_symbol2:"
+"token_eth_address2:token_price_eth2. For example: "
+"TSX:0xe762Da33bf2b2412477c65b01f46D923A7Ef5794:0.001,"
+"EOS:0x86Fa049857E0209aa7D9e616F7eb3b3B78ECfdb0:0.01054550"
+msgstr ""
+
+#: src/gateway.php:592
+msgid "Disable Ether"
+msgstr ""
+
+#: src/gateway.php:593
+msgid "Disallow customer to pay with Ether"
+msgstr ""
+
+#: src/gateway.php:595
+msgid ""
+"This option is useful to accept only some token. It is an advanced option. "
+"Use with care."
+msgstr ""
+
+#: src/gateway.php:599
+msgid "Gas limit"
+msgstr ""
+
+#: src/gateway.php:601
+msgid "The gas limit for transaction."
+msgstr ""
+
+#: src/gateway.php:605
+msgid "Gas price, Gwei"
+msgstr ""
+
+#: src/gateway.php:607
+msgid "The gas price for transaction."
+msgstr ""
+
+#: src/gateway.php:611
+msgid "Mark ETH or ERC20 token price up by %"
+msgstr ""
+
+#: src/gateway.php:612
+msgid ""
+"To help cover currency fluctuations the plugin can automatically mark up "
+"converted rates for you. These are applied as percentage markup, so a 1ETH "
+"value with a 1.00% markup will be presented to the customer as 1.01ETH."
+msgstr ""
+
+#: src/gateway.php:626
+msgid "Need help to configure this plugin?"
+msgstr ""
+
+#: src/gateway.php:629 src/gateway.php:640
+#, php-format
+msgid "Feel free to %1$shire me!%2$s"
+msgstr ""
+
+#: src/gateway.php:637
+msgid "Need help to develop a ERC20 token for your ICO?"
+msgstr ""
+
+#: src/gateway.php:648
+msgid "Want to sell your ERC20/ERC223 ICO token from your ICO site?"
+msgstr ""
+
+#: src/gateway.php:651
+#, php-format
+msgid "Install the %1$sThe EthereumICO Wordpress plugin%2$s!"
+msgstr ""
+
+#: src/gateway.php:659
+msgid "Want to sell ERC20 token for fiat and/or Bitcoin?"
+msgstr ""
+
+#: src/gateway.php:662
+#, php-format
+msgid "Install the %1$sCryptocurrency Product for WooCommerce plugin%2$s!"
+msgstr ""
+
+#: src/gateway.php:692
+#, php-format
+msgid ""
+"Your customers will be given instructions about where, and how much to pay. "
+"Your orders will be marked as on-hold when they are placed. And as complete "
+"when payment is recieved. You can update your orders on the <a href=\"%s"
+"\">WooCommerce Orders</a> page."
+msgstr ""
+
+#: src/gateway.php:721
+#, php-format
+msgid "Order submitted, and payment with %s requested."
+msgstr ""
+
+#: src/gateway.php:729
+#, php-format
+msgid "Order value calculated as %f %s"
+msgstr ""
+
+#: src/gateway.php:733
+msgid "Awaiting payment."
+msgstr ""
+
+#: src/gateway.php:795
+#, php-format
+msgid "%s failed to schedule for order: %s"
+msgstr ""
+
+#: src/gateway.php:801
+#, php-format
+msgid "%s scheduled for order: %s"
+msgstr ""
+
+#: src/gateway.php:810
+msgid "The ERC20 token payment consists of two steps."
+msgstr ""
+
+#: src/gateway.php:811
+msgid ""
+"Deposit funds to the payment gateway smart contract in the Ethereum "
+"blockchain, and"
+msgstr ""
+
+#: src/gateway.php:812
+msgid "Use this deposit to pay for your order."
+msgstr ""
+
+#: src/gateway.php:813
+msgid ""
+"You have to send two transactions to the Ethereum blockchain: first for "
+"deposit and second for the real payment."
+msgstr ""
+
+#: src/gateway.php:814
+msgid "Step 2: Release deposit for payment."
+msgstr ""
+
+#: src/gateway.php:815
+msgid ""
+"Send a command to the payment gateway smart contract to do the actual "
+"payment for you. The payment gateway smart contract can not spend your "
+"tokens without your command. And nobody except you can send this command to "
+"the gateway contract. But note, that if you cancel the order on this step "
+"and then decide to pay for this or any other order with the same token "
+"again, you'll be asked to approve 0 (zero) amount of tokens first, and only "
+"after that you'll be able to approve the desired token amount. It is true "
+"even for purchases on other stores that use the same payment gateway. It is "
+"due to the ERC20 token internal limitations."
+msgstr ""
+
+#: src/gateway.php:816
+msgid "Step 1: Deposit funds to the payment gateway smart contract."
+msgstr ""
+
+#: src/gateway.php:817
+msgid ""
+"This step calls the approve method on the token smart contract to allow the "
+"payment gateway contract to spend this amount of tokens on behalf of you. "
+"The Amount field is the amount of tokens you are required to pay for this "
+"order. The Value field is always 0 (zero) for token payments."
+msgstr ""
+
+#: src/gateway.php:818
+msgid "Payment succeeded!"
+msgstr ""
+
+#: src/gateway.php:819
+msgid "Payment succeeded! Reload page if it was not auto reloaded."
+msgstr ""
+
+#: src/gateway.php:820
+msgid "Payment status: not complete."
+msgstr ""
+
+#: src/gateway.php:821
+msgid "Payment status: deposit made."
+msgstr ""
+
+#: src/gateway.php:822
+msgid ""
+"This wizard requires the MetaMask browser extension to be installed and your "
+"MetaMask account to be unlocked. If you do not want to use MetaMask, just "
+"copy and paste Value, Address, and Data fields in your favorite wallet "
+"software. Ensure these values are quoted exactly, otherwise we won't be able "
+"to reconcile your payment."
+msgstr ""
+
+#: src/gateway.php:823
+msgid ""
+"MetaMask network mismatch. Choose another network or ask site administrator."
+msgstr ""
+
+#: src/gateway.php:869
+msgid "Choose Ether or ERC20 token"
+msgstr ""
+
+#: src/gateway.php:902 src/gateway.php:1059 src/gateway.php:1178
+#: src/main.php:146
+msgid "Amount"
+msgstr ""
+
+#: src/gateway.php:909 src/gateway.php:1074 src/gateway.php:1185
+msgid "Advanced"
+msgstr ""
+
+#: src/gateway.php:913 src/gateway.php:1078 src/gateway.php:1189
+msgid "Value"
+msgstr ""
+
+#: src/gateway.php:921 src/gateway.php:949 src/gateway.php:977
+#: src/gateway.php:1086 src/gateway.php:1114 src/gateway.php:1142
+#: src/gateway.php:1197 src/gateway.php:1225 src/gateway.php:1252
+msgid "QR"
+msgstr ""
+
+#: src/gateway.php:924 src/gateway.php:952 src/gateway.php:980
+#: src/gateway.php:1089 src/gateway.php:1117 src/gateway.php:1145
+#: src/gateway.php:1200 src/gateway.php:1228 src/gateway.php:1255
+msgid "Copy"
+msgstr ""
+
+#: src/gateway.php:941 src/gateway.php:1106 src/gateway.php:1217
+#: src/main.php:147
+msgid "Address"
+msgstr ""
+
+#: src/gateway.php:969 src/gateway.php:1135 src/gateway.php:1245
+msgid "Data"
+msgstr ""
+
+#: src/gateway.php:1001 src/gateway.php:1277 src/gateway.php:1326
+msgid "Do not close or reload this page until payment confirmation complete."
+msgstr ""
+
+#: src/gateway.php:1005 src/gateway.php:1328
+msgid "Pay with MetaMask"
+msgstr ""
+
+#: src/gateway.php:1006 src/gateway.php:1285
+msgid "Download MetaMask!"
+msgstr ""
+
+#: src/gateway.php:1021 src/gateway.php:1051 src/gateway.php:1170
+msgid "More..."
+msgstr ""
+
+#: src/gateway.php:1040
+msgid "1. Deposit funds"
+msgstr ""
+
+#: src/gateway.php:1041
+msgid "2. Make payment"
+msgstr ""
+
+#: src/gateway.php:1067
+msgid "Balance"
+msgstr ""
+
+#: src/gateway.php:1282
+msgid "Previous"
+msgstr ""
+
+#: src/gateway.php:1284
+msgid "Next"
+msgstr ""
+
+#: src/gateway.php:1327
+msgid "Deposit with MetaMask"
+msgstr ""
+
+#: src/gateway.php:1329
+msgid "Download MetaMask"
+msgstr ""
+
+#: src/gateway.php:1330
+msgid "Download MetaMask or input your ethereum address"
+msgstr ""
+
+#: src/gateway.php:1331
+msgid "Unlock your MetaMask account please."
+msgstr ""
+
+#: src/gateway.php:1332
+msgid "Failed to pay ETH with MetaMask"
+msgstr ""
+
+#: src/gateway.php:1333
+msgid "Pay ETH with MetaMask succeeded"
+msgstr ""
+
+#: src/gateway.php:1334
+msgid "Failed to deposit ETH with MetaMask"
+msgstr ""
+
+#: src/gateway.php:1335
+msgid "Deposit ETH with MetaMask succeeded"
+msgstr ""
+
+#: src/gateway.php:1336
+msgid "Failed to pay ERC20 token with MetaMask"
+msgstr ""
+
+#: src/gateway.php:1337
+msgid "Failed to pay ERC20 token: insufficient balance"
+msgstr ""
+
+#: src/gateway.php:1338
+msgid "Pay ERC20 token with MetaMask succeeded"
+msgstr ""
+
+#: src/gateway.php:1339
+msgid "Failed to pay ETH with MetaMask - rejected"
+msgstr ""
+
+#: src/gateway.php:1340
+msgid "Failed to pay ERC20 token with MetaMask - rejected"
+msgstr ""
+
+#: src/gateway.php:1341
+msgid "Failed to deposit ERC20 token with MetaMask"
+msgstr ""
+
+#: src/gateway.php:1342
+msgid "Failed to deposit ERC20 token: insufficient balance"
+msgstr ""
+
+#: src/gateway.php:1343
+msgid "Deposit ERC20 token with MetaMask succeeded"
+msgstr ""
+
+#: src/gateway.php:1344
+msgid "Failed to deposit ETH with MetaMask - rejected"
+msgstr ""
+
+#: src/gateway.php:1345
+msgid "Failed to deposit ERC20 token with MetaMask - rejected"
+msgstr ""
+
+#: src/gateway.php:1346
+msgid "Copied to clipboard"
+msgstr ""
+
+#: src/paymentreceivedemail.php:26
+msgid "ETH/ERC20 payment completed"
+msgstr ""
+
+#: src/paymentreceivedemail.php:27
+msgid "Notification that payment by ETH/ERC20 has been received."
+msgstr ""
+
+#: src/paymentreceivedemail.php:28 src/paymentreceivedemail.php:29
+msgid "Payment received"
+msgstr ""
+
+#: src/paymentreceivedemail.php:124
+msgid "Enable/Disable"
+msgstr ""
+
+#: src/paymentreceivedemail.php:126
+msgid "Enable this email notification"
+msgstr ""
+
+#: src/paymentreceivedemail.php:130
+msgid "Subject"
+msgstr ""
+
+#: src/paymentreceivedemail.php:132
+#, php-format
+msgid ""
+"This controls the email subject line. Leave blank to use the default "
+"subject: <code>%s</code>."
+msgstr ""
+
+#: src/paymentreceivedemail.php:137
+msgid "Email Heading"
+msgstr ""
+
+#: src/paymentreceivedemail.php:139
+#, php-format
+msgid ""
+"This controls the main heading contained within the email notification. "
+"Leave blank to use the default heading: <code>%s</code>."
+msgstr ""
+
+#: src/paymentreceivedemail.php:144
+msgid "Email type"
+msgstr ""
+
+#: src/paymentreceivedemail.php:146
+msgid "Choose which format of email to send."
+msgstr ""
+
+#: src/paymentreceivedemail.php:150
+msgid "Plain text"
+msgstr ""
+
+#: src/paymentreceivedemail.php:151
+msgid "HTML"
+msgstr ""
+
+#: src/paymentreceivedemail.php:152
+msgid "Multipart"
+msgstr ""
+
+#: templates/emails/plain/pwe-payment-received.php:14
+#, php-format
+msgid "Payment received for order %d."
+msgstr ""
+
+#: templates/emails/plain/pwe-payment-received.php:16
+#: templates/emails/pwe-payment-received.php:17
+msgid ""
+"Congratulations. We've received payment for your order. We've included your "
+"details below as a reminder of your order."
+msgstr ""
+
+#: templates/emails/pwe-payment-received.php:15
+#, php-format
+msgid "Payment received for order %d"
+msgstr ""

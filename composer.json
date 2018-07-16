@@ -1,0 +1,24 @@
+{
+    "name": "olegabr/ether-and-erc20-tokens-woocommerce-payment-gateway",
+    "description": "Ether and ERC20 tokens WooCommerce Payment Gateway enables customers to pay with Ether or any ERC20 or ERC223 token on your WooCommerce store.",
+    "keywords": ["ethereum", "erc20", "wordpress", "woocommerce", "payment", "gateway", "erc223", "blockchain"],
+    "type": "project",
+    "homepage": "https://ethereumico.io/",
+    "repositories": [
+       {
+          "type": "vcs",
+          "url": "https://github.com/olegabr/web3.php"
+       }
+    ],
+    "require": {
+        "sc0vu/web3.php": "dev-master"
+    },
+    "license": "GPLv3",
+    "authors": [
+        {
+            "name": "Oleg Abrosimov",
+            "email": "olegabrosimovnsk@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}

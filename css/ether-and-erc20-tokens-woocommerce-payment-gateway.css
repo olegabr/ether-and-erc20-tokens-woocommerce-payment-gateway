@@ -1,0 +1,118 @@
+.epg-payment-instructions .spinner {
+	background: url('/wp-admin/images/wpspin_light.gif') no-repeat;
+	background-size: 16px 16px;
+	display: none;
+	float: right;
+	opacity: .7;
+	filter: alpha(opacity=70);
+	width: 16px;
+	height: 16px;
+	margin: 18px 5px 0;
+}
+
+.epg-payment-instructions .spinner.is-active {
+	display: block;
+}
+
+/*http://jsfiddle.net/0vzmmn0v/1/*/
+.epg-payment-instructions .alert .glyphicon{
+    display:table-cell;
+}
+
+.epg-payment-instructions .alert div,
+.epg-payment-instructions .alert span{
+    padding-left: 5px;
+}
+
+.epg-payment-instructions .alert div {
+    display:table-cell;
+}
+
+.epg-payment-instructions #epg-spinner {
+    margin-top: 10px;
+}
+
+.epg-payment-instructions ul.nav.nav-pills {
+    margin-left: 0px;
+}
+.epg-payment-instructions button#epg-button-next,
+.epg-payment-instructions button#epg-refund-metamask-button {
+    /*margin-left: 10px;*/
+}
+
+.epg-payment-instructions .navbar {
+    margin-bottom: 10px;
+}
+
+body.admin-bar .epg-payment-instructions .navbar,
+.epg-payment-instructions .navbar {
+    margin-top: auto;
+    box-shadow: none;
+    font-size: inherit;
+    position: initial;
+    top: auto;
+}
+
+.epg-payment-instructions button.button {
+    font-size: initial;
+}
+
+.epg-payment-instructions button#epg-ether-mm-pay,
+.epg-payment-instructions button#epg-download-metamask-button,
+.epg-payment-instructions button#epg-button-previous,
+.epg-payment-instructions button#epg-button-next {
+    margin-top: 10px;
+}
+
+.epg-payment-instructions button#epg-button-next {
+    margin-left: 10px;
+}
+
+.epg-payment-instructions input, .epg-payment-instructions label {
+    width: 100%;
+}
+
+.epg-payment-instructions input {
+    margin-top: 0px;
+    font-size: inherit;
+}
+
+.epg-payment-instructions ul li,
+.page .page-content .epg-payment-instructions ul li {
+    margin-right: auto;
+    margin-left: 0px;
+    display: block;
+    text-shadow: none;
+}
+
+.epg-payment-instructions .input-group .input-group-btn {
+    padding-right: 0px;
+    padding-left: 0px;
+}
+
+.twbs.epg-payment-instructions .form-control {
+    font-size: inherit;
+}
+
+.twbs.epg-payment-instructions select.form-control:not([size]):not([multiple]) {
+    height: inherit;
+}
+
+.twbs .collapse.in {
+    display: block!important;
+}
+
+@media (min-width: 768px) {
+    .twbs .offset-md-2 {
+        margin-left: 16.666667%!important;
+    }
+
+    .twbs .offset-md-8 {
+        margin-left: 66.666667%!important;
+    }
+}
+
+.epg-payment-instructions .col-12.d-block.mx-auto.col-md-4.float-none {
+    padding-left: 0px;
+    padding-right: 0px;
+}

@@ -1,0 +1,8 @@
+nbproject/
+
+/vendor/
+/composer.lock
+ether-and-erc20-tokens-woocommerce-payment-gateway.zip
+
+node_modules/
+package-lock.json
