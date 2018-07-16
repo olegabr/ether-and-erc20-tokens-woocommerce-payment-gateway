@@ -206,165 +206,6 @@ function ether_and_erc20_tokens_woocommerce_payment_gateway_getPaymentInfo($orde
     return null;
 }
 
-function wc_erc20_pg_check_tx_status_impl(
-$order_id, $tokens_supported, $orderExpiredTimeout, $event_timeout_sec
-, $providerUrl, $blockchainNetwork, $marketAddress, $standalone = false
-) {
-    $order = new WC_Order($order_id);
-    if (!$order->needs_payment()) {
-        if ($standalone) {
-            $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-                sprintf(
-                    __('Order do not need payment, tx check stopped: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
-                )
-            );
-        }
-        return true;
-    }
-    // WC_DateTime|NULL object if the date is set or null if there is no date.
-    $created = $order->get_date_created();
-    if ($created) {
-        $diff = time() - $created->getTimestamp();
-        if ($diff > $orderExpiredTimeout) {
-            if ($standalone) {
-                $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-                    sprintf(
-                        __('Order expired: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
-                    )
-                );
-                $order->add_order_note(
-                    __('Order was expired.', 'ether-and-erc20-tokens-woocommerce-payment-gateway')
-                );
-            }
-            return false;
-        }
-    }
-
-    $paymentInfo = ether_and_erc20_tokens_woocommerce_payment_gateway_getPaymentInfo($order_id, $providerUrl, $blockchainNetwork, $marketAddress);
-    if (!$paymentInfo) {
-        // no payment yet
-        $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-            sprintf(
-                __('No payment found for order: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
-            )
-        );
-        return false;
-    }
-
-    $paymentSuccess = false;
-    $eth_value = ether_and_erc20_tokens_woocommerce_payment_gateway_getEthValueByOrderId($order_id);
-    $decimals_eth = 1000000000000000000;
-    $eth_value_wei = doubleval($eth_value) * $decimals_eth;
-    // payment recieved
-    foreach ($paymentInfo as $currencyPayment => $valuePayment) {
-        $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-            sprintf(
-                __('PaymentInfo recieved for order_id=%s. %s: %s. eth_value=%s, eth_value_wei=%s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id, $currencyPayment, $valuePayment, $eth_value, $eth_value_wei
-            )
-        );
-        // ETH is encoded as address 0x0000000000000000000000000000000000000001
-        if ('0x0000000000000000000000000000000000000001' == $currencyPayment) {
-            $paymentSuccess = ($valuePayment >= $eth_value_wei);
-        } else {
-            // $valuePayment is in some ERC20 token
-            $tokens_supported = $tokens_supported;
-            $decimals_token = intval(woo_eth_erc20_get_token_decimals($currencyPayment, $providerUrl)->toString());
-            $rate = ether_and_erc20_tokens_woocommerce_payment_gateway_getTokenRate($tokens_supported, $currencyPayment);
-            $value = ($valuePayment / pow(10, $decimals_token)) * doubleval($rate);
-            $paymentSuccess = ($value >= doubleval($eth_value));
-            if (!$paymentSuccess) {
-                $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-                    sprintf(
-                        'Payment failure for order_id=%s. tokens: %s. token decimals: %s. rate=%s. value=%s'
-                        , $order_id, $tokens_supported, $decimals_token, $rate, $value
-                    )
-                );
-            }
-        }
-        break;
-    }
-
-    if ($paymentSuccess) {
-        // Trigger the emails to be registered and hooked.
-        WC()->mailer()->init_transactional_emails();
-
-        $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-            __('Successful payment notification received. Order updated to pending.', 'ether-and-erc20-tokens-woocommerce-payment-gateway')
-        );
-        $order->add_order_note(
-            __('Successful payment notification received. Order updated to pending.', 'ether-and-erc20-tokens-woocommerce-payment-gateway')
-        );
-        $order->payment_complete();
-    } else {
-        $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-            sprintf(
-                __('Non-successful payment notification received. Order updated to failed: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
-            )
-        );
-        $order->add_order_note(
-            __('Non-successful payment notification received. Order updated to failed.', 'ether-and-erc20-tokens-woocommerce-payment-gateway')
-        );
-        $order->update_status('failed', __('Non-successful payment notification.', 'ether-and-erc20-tokens-woocommerce-payment-gateway'));
-    }
-    return $paymentSuccess;
-}
-
-function wc_erc20_pg_check_tx_status_handler(
-$order_id, $tokens_supported, $orderExpiredTimeout, $event_timeout_sec
-, $providerUrl, $blockchainNetwork, $marketAddress
-) {
-    error_log("wc_erc20_pg_check_tx_status_handler called");
-    $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-        sprintf(
-            __('tx check for order: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
-        )
-    );
-    $order = new WC_Order($order_id);
-    if (!$order->needs_payment()) {
-        $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-            sprintf(
-                __('Order do not need payment, tx check stopped: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
-            )
-        );
-        return;
-    }
-    // WC_DateTime|NULL object if the date is set or null if there is no date.
-    $created = $order->get_date_created();
-    if ($created) {
-        $diff = time() - $created->getTimestamp();
-        if ($diff > $orderExpiredTimeout) {
-            $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-                sprintf(
-                    __('Order expired: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
-                )
-            );
-            $order->add_order_note(
-                __('Order was expired.', 'ether-and-erc20-tokens-woocommerce-payment-gateway')
-            );
-            return;
-        }
-    }
-
-    // schedule next check
-    $event_key = 'wc_erc20_pg_check_tx_status_handler';
-    $event_at = time() + $event_timeout_sec;
-    $params = array($order_id, $tokens_supported, $orderExpiredTimeout, $event_timeout_sec
-        , $providerUrl, $blockchainNetwork, $marketAddress);
-    wp_schedule_single_event($event_at, $event_key, $params);
-
-    $paymentSuccess = wc_erc20_pg_check_tx_status_impl(
-        $order_id, $tokens_supported, $orderExpiredTimeout, $event_timeout_sec
-        , $providerUrl, $blockchainNetwork, $marketAddress);
-
-    if ($paymentSuccess) {
-        // clear this event schedule
-        wp_unschedule_event($event_at, $event_key, $params);
-    }
-}
-
-error_log("wc_erc20_pg_check_tx_status_handler registered 1");
-add_action('wc_erc20_pg_check_tx_status_handler', 'wc_erc20_pg_check_tx_status_handler', 10, 7);
-
 /**
  * WooCommerce gateway class implementation.
  */
@@ -404,10 +245,6 @@ class Gateway extends WC_Payment_Gateway {
 
         // Show payment instructions on thank you page.
         add_action('woocommerce_thankyou_ether-and-erc20-tokens-woocommerce-payment-gateway', array($this, 'thank_you_page'));
-
-//        add_filter('cron_schedules', array($this, 'cron_schedules'));
-//        error_log("wc_erc20_pg_check_tx_status_handler registered 2");
-//        add_action( 'wc_erc20_pg_check_tx_status_handler', 'wc_erc20_pg_check_tx_status_handler', 10, 7 );
         
         add_action( 'wp_enqueue_scripts', array( $this, 'register_plugin_styles' ) );
     }
@@ -513,6 +350,21 @@ class Gateway extends WC_Payment_Gateway {
     }
 
     /**
+     * Mark up a price by the configured amount.
+     *
+     * @param  float $price  The price to be marked up.
+     *
+     * @return float         The marked up price.
+     */
+    private function apply_markup_token($price) {
+        $markup_percent_token = doubleval($this->settings['markup_percent_token']);
+        $multiplier = ( $markup_percent_token / 100 ) + 1;
+        $markup_percent = doubleval($this->settings['markup_percent']);
+        $divider = ( $markup_percent / 100 ) + 1;
+        return round(doubleval($price) * $multiplier / $divider, 5, PHP_ROUND_HALF_UP);
+    }
+
+    /**
      * Initialise Gateway Settings Form Fields
      */
     function init_form_fields() {
@@ -608,8 +460,20 @@ class Gateway extends WC_Payment_Gateway {
                 'default' => '21',
             ),
             'markup_percent' => array(
-                'title' => __('Mark ETH or ERC20 token price up by %', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
+                'title' => __('Mark Ether price up by %', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
                 'description' => __('To help cover currency fluctuations the plugin can automatically mark up converted rates for you. These are applied as percentage markup, so a 1ETH value with a 1.00% markup will be presented to the customer as 1.01ETH.', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
+                'default' => '2.0',
+                'type' => 'number',
+                'css' => 'width:100px;',
+                'custom_attributes' => array(
+                    'min' => -100,
+                    'max' => 100,
+                    'step' => 0.1,
+                ),
+            ),
+            'markup_percent_token' => array(
+                'title' => __('Mark ERC20 token price up by %', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
+                'description' => __('To help cover currency fluctuations the plugin can automatically mark up converted rates for you. These are applied as percentage markup, so a 1 ERC20 Token value with a 1.00% markup will be presented to the customer as 1.01 Token.', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
                 'default' => '2.0',
                 'type' => 'number',
                 'css' => 'width:100px;',
@@ -621,7 +485,7 @@ class Gateway extends WC_Payment_Gateway {
             ),
         );
 
-        $this->form_fields += array(
+       $this->form_fields += array(
             'ads1' => array(
                 'title' => __('Need help to configure this plugin?', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
                 'type' => 'title',
@@ -760,6 +624,109 @@ class Gateway extends WC_Payment_Gateway {
         );
     }
     
+    function check_tx_status(
+        $order_id, $tokens_supported, $orderExpiredTimeout, $event_timeout_sec
+        , $providerUrl, $blockchainNetwork, $marketAddress, $standalone = false
+    ) {
+        $order = new WC_Order($order_id);
+        if (!$order->needs_payment()) {
+            if ($standalone) {
+                $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
+                    sprintf(
+                        __('Order do not need payment, tx check stopped: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
+                    )
+                );
+            }
+            return true;
+        }
+        // WC_DateTime|NULL object if the date is set or null if there is no date.
+        $created = $order->get_date_created();
+        if ($created) {
+            $diff = time() - $created->getTimestamp();
+            if ($diff > $orderExpiredTimeout) {
+                if ($standalone) {
+                    $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
+                        sprintf(
+                            __('Order expired: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
+                        )
+                    );
+                    $order->add_order_note(
+                        __('Order was expired.', 'ether-and-erc20-tokens-woocommerce-payment-gateway')
+                    );
+                }
+                return false;
+            }
+        }
+
+        $paymentInfo = ether_and_erc20_tokens_woocommerce_payment_gateway_getPaymentInfo($order_id, $providerUrl, $blockchainNetwork, $marketAddress);
+        if (!$paymentInfo) {
+            // no payment yet
+            $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
+                sprintf(
+                    __('No payment found for order: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
+                )
+            );
+            return false;
+        }
+
+        $paymentSuccess = false;
+        $eth_value = ether_and_erc20_tokens_woocommerce_payment_gateway_getEthValueByOrderId($order_id);
+        $decimals_eth = 1000000000000000000;
+        $eth_value_wei = doubleval($eth_value) * $decimals_eth;
+        // payment recieved
+        foreach ($paymentInfo as $currencyPayment => $valuePayment) {
+            $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
+                sprintf(
+                    __('PaymentInfo recieved for order_id=%s. %s: %s. eth_value=%s, eth_value_wei=%s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id, $currencyPayment, $valuePayment, $eth_value, $eth_value_wei
+                )
+            );
+            // ETH is encoded as address 0x0000000000000000000000000000000000000001
+            if ('0x0000000000000000000000000000000000000001' == $currencyPayment) {
+                $paymentSuccess = ($valuePayment >= $eth_value_wei);
+            } else {
+                // $valuePayment is in some ERC20 token
+                $tokens_supported = $tokens_supported;
+                $decimals_token = intval(woo_eth_erc20_get_token_decimals($currencyPayment, $providerUrl)->toString());
+                $rate = ether_and_erc20_tokens_woocommerce_payment_gateway_getTokenRate($tokens_supported, $currencyPayment);
+                $value = round(($valuePayment / pow(10, $decimals_token)) * doubleval($rate), 5, PHP_ROUND_HALF_UP);
+                $value_eth_token = $this->apply_markup_token($eth_value);
+                $paymentSuccess = ($value >= $value_eth_token);
+                if (!$paymentSuccess) {
+                    $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
+                        sprintf(
+                            'Payment failure for order_id=%s. tokens: %s. token decimals: %s. rate=%s. value=%s. value_eth_token=%s'
+                            , $order_id, $tokens_supported, $decimals_token, $rate, $value, $value_eth_token
+                        )
+                    );
+                }
+            }
+            break;
+        }
+
+        if ($paymentSuccess) {
+            // Trigger the emails to be registered and hooked.
+            WC()->mailer()->init_transactional_emails();
+
+            $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
+                __('Successful payment notification received. Order updated to pending.', 'ether-and-erc20-tokens-woocommerce-payment-gateway')
+            );
+            $order->add_order_note(
+                __('Successful payment notification received. Order updated to pending.', 'ether-and-erc20-tokens-woocommerce-payment-gateway')
+            );
+            $order->payment_complete();
+        } else {
+            $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
+                sprintf(
+                    __('Non-successful payment notification received. Order updated to failed: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
+                )
+            );
+            $order->add_order_note(
+                __('Non-successful payment notification received. Order updated to failed.', 'ether-and-erc20-tokens-woocommerce-payment-gateway')
+            );
+            $order->update_status('failed', __('Non-successful payment notification.', 'ether-and-erc20-tokens-woocommerce-payment-gateway'));
+        }
+        return $paymentSuccess;
+    }
     /**
      * Output the payment information onto the thank you page.
      *
@@ -781,29 +748,9 @@ class Gateway extends WC_Payment_Gateway {
             $blockchainNetwork,
             $marketAddress
         );
-        $paymentSuccess = wc_erc20_pg_check_tx_status_impl(
+        $paymentSuccess = $this->check_tx_status(
             $order_id, $tokens_supported, $this->getOrderExpiredTimeout(), $event_timeout_sec, $providerUrl, $blockchainNetwork, $marketAddress, true
         );
-        if (!$paymentSuccess) {
-            $event_key = 'wc_erc20_pg_check_tx_status_handler';
-            $timestamp = wp_next_scheduled($event_key, $params);
-            // check if not already scheduled
-            if (false === $timestamp) {
-                if (false === wp_schedule_single_event(time() + $event_timeout_sec, $event_key, $params)) {
-                    $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-                        sprintf(
-                            __('%s failed to schedule for order: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $event_key, $order_id
-                        )
-                    );
-                } else {
-                    $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
-                        sprintf(
-                            __('%s scheduled for order: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $event_key, $order_id
-                        )
-                    );
-                }
-            }
-        }
 
         $eth_value = ether_and_erc20_tokens_woocommerce_payment_gateway_getEthValueByOrderId($order_id);
         list($eth_value_with_dust, $eth_value_with_dust_str) = ether_and_erc20_tokens_woocommerce_payment_gateway_getEthValueWithDustByOrderId($eth_value, $order_id);
@@ -1283,8 +1230,8 @@ class Gateway extends WC_Payment_Gateway {
                                 <div id="epg-wizard-buttons-group" class="col-12 offset-md-2 col-md-10" style="padding-left: 0px;padding-right: 0px;">
                                     <button id="epg-button-next" class="button float-right col-md-4 col-sm-12"><?php _e('Next', 'ether-and-erc20-tokens-woocommerce-payment-gateway'); ?></button>
                                     <button id="epg-download-metamask-button" class="button hidden float-right col-md-4 col-sm-12" hidden><?php _e('Download MetaMask!', 'ether-and-erc20-tokens-woocommerce-payment-gateway'); ?></button>
+                                    <div id="epg-spinner" class="spinner float-right"></div>
                                 </div>
-                                <div id="epg-spinner" class="spinner float-right"></div>
                             </div>
                         </div>
                     </div>
@@ -1298,11 +1245,11 @@ class Gateway extends WC_Payment_Gateway {
             $min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
             wp_enqueue_script(
                 'wooetherc20paymentgateway', 
-                $base_url . "/js/ether-and-erc20-tokens-woocommerce-payment-gateway{$min}.js", array('jquery', 'bootstrap.wizard', 'web3', 'jquery.qrcode'), '2.2.2'
+                $base_url . "/js/ether-and-erc20-tokens-woocommerce-payment-gateway{$min}.js", array('jquery', 'bootstrap.wizard', 'web3', 'jquery.qrcode'), '2.3.0'
             );
             wp_enqueue_style(
                 'wooetherc20paymentgateway', 
-                $base_url . "/css/ether-and-erc20-tokens-woocommerce-payment-gateway.css", array('bootstrap-ether-and-erc20-tokens-woocommerce-payment-gateway'), '2.2.2'
+                $base_url . "/css/ether-and-erc20-tokens-woocommerce-payment-gateway.css", array('bootstrap-ether-and-erc20-tokens-woocommerce-payment-gateway'), '2.3.0'
             );
 
             $web3Endpoint = $this->getWeb3Endpoint();
@@ -1313,6 +1260,8 @@ class Gateway extends WC_Payment_Gateway {
                 'gas_price' => esc_html(floatval(isset($this->settings['gas_price']) ? $this->settings['gas_price'] : '21')),
                 'payment_address' => esc_html(isset($this->settings['payment_address']) ? $this->settings['payment_address'] : ''),
                 'tokens_supported' => esc_html(isset($this->settings['tokens_supported']) ? $this->settings['tokens_supported'] : ''),
+                'markup_percent' => esc_html(isset($this->settings['markup_percent']) ? $this->settings['markup_percent'] : ''),
+                'markup_percent_token' => esc_html(isset($this->settings['markup_percent_token']) ? $this->settings['markup_percent_token'] : ''),
                 'gateway_address_v1' => $this->getGatewayContractAddress_v1(),
                 'gateway_abi_v1' => $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->gatewayContractABI_v1,
                 'gateway_address' => $this->getGatewayContractAddress(),

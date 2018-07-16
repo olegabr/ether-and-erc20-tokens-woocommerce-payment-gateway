@@ -4,7 +4,7 @@
 Plugin Name: Ether and ERC20 tokens WooCommerce Payment Gateway
 Plugin URI: https://wordpress.org/plugins/ether-and-erc20-tokens-woocommerce-payment-gateway
 Description: Ether and ERC20 tokens WooCommerce Payment Gateway enables customers to pay with Ether or any ERC20 or ERC223 token on your WooCommerce store.
-Version: 2.2.2
+Version: 2.3.0
 WC requires at least: 2.6.0
 WC tested up to: 3.4
 Author: ethereumicoio

@@ -139,9 +139,6 @@ class Main {
 		esc_html_e( __('Payment details', 'ether-and-erc20-tokens-woocommerce-payment-gateway') );
 		?>
 		</h2>
-		<?php
-		esc_html_e( $settings['payment_summary'] );
-		?>
 		<ul>
 			<li><?php _e( 'Amount', 'ether-and-erc20-tokens-woocommerce-payment-gateway' ); ?>: <strong><?php esc_html_e( $eth_value ); ?></strong> ETH</li>
 			<li><?php _e( 'Address', 'ether-and-erc20-tokens-woocommerce-payment-gateway' ); ?>: <strong><?php esc_html_e( $settings['payment_address'] ); ?></strong></li>

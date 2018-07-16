@@ -171,6 +171,10 @@ function epg_getTokenInfoByAddress(tokenAddress) {
 	return null;
 }
 
+function epg_calc_with_token_markup(value) {
+    return parseFloat(value) * (100 + parseFloat(window.epg.markup_percent_token)) / (100 + parseFloat(window.epg.markup_percent));
+}
+
 // fill the epg-payment-info div
 function epg_fill_token_payment_info(token, cb) {
     if ('undefined' === typeof cb) {
@@ -223,7 +227,7 @@ function epg_fill_token_payment_info(token, cb) {
                     cb.call(null, "Failed to obtain token rate", null);
                     return;
                 }
-                var tokenAmount = parseFloat(window.epg.eth_value) / rate;
+                var tokenAmount = epg_calc_with_token_markup(window.epg.eth_value) / rate;
                 // cut decimals beyond the token supported maximum
                 var tokenAmount2 = Math.ceil(tokenAmount * Math.pow(10, decimals.toNumber()));
                 tokenAmount = tokenAmount2 / Math.pow(10, decimals.toNumber());
@@ -804,52 +808,52 @@ function epg_getValuePaymentEth(cb) {
     epg_getCurrencyPayment(function(err, currencyAddress) {
         if (err) {
             console.log(err);
-            cb.call(null, err, null);
+            cb.call(null, err, null, currencyAddress);
             return;
         }
         if (currencyAddress === "0x0000000000000000000000000000000000000000" ||
             currencyAddress === "0x") {
             // no payment was performed
-            cb.call(null, null, null);
+            cb.call(null, null, null, currencyAddress);
             return;
         }
         epg_getValuePayment(function(err, value) {
             if (err) {
                 console.log(err);
-                cb.call(null, err, null);
+                cb.call(null, err, null, currencyAddress);
                 return;
             }
             // ETH is encoded as address 0x0000000000000000000000000000000000000001
             if (currencyAddress === "0x0000000000000000000000000000000000000001") {
-                cb.call(null, null, value.toNumber() / window.epg.web3.toWei(1, 'ether'));
+                cb.call(null, null, value.toNumber() / window.epg.web3.toWei(1, 'ether'), currencyAddress);
                 return;
             }
             epg_get_token_decimals(currencyAddress, function(error, decimals) {
                 if (error) {
                     console.log(error);
-                    cb.call(null, error, null);
+                    cb.call(null, error, null, currencyAddress);
                     return;
                 }
                 if (null === decimals) {
                     console.log("Failed to obtain ERC20 token decimals value");
-                    cb.call(null, window.epg.str_pay_token_failure, null);
+                    cb.call(null, window.epg.str_pay_token_failure, null, currencyAddress);
                     return;
                 }
                 var rate = epg_getTokenRate(currencyAddress);
                 if (null === rate) {
                     console.log("Failed to obtain token rate");
-                    cb.call(null, window.epg.str_pay_token_failure, null);
+                    cb.call(null, window.epg.str_pay_token_failure, null, currencyAddress);
                     return;
                 }
 
                 var contract = epg_get_gateway_contract();
                 if (!contract) {
                     console.log("Failed to obtain a gateway contract");
-                    cb.call(null, "Failed to obtain a gateway contract", null);
+                    cb.call(null, "Failed to obtain a gateway contract", null, currencyAddress);
                     return;
                 }
                 var value_eth = rate * value.toNumber() / Math.pow(10, decimals.toNumber());
-                cb.call(null, null, value_eth);
+                cb.call(null, null, value_eth, currencyAddress);
             });
         });
     });
@@ -1363,7 +1367,7 @@ function epg_initWizard(cb) {
                                 epg_alert((token === 'ETH') ? window.epg.str_deposit_eth_failure : window.epg.str_deposit_token_failure);
                                 return;
                             }
-                            if (null === value || epg_round (value, 5, "PHP_ROUND_HALF_UP") < epg_round (parseFloat(window.epg.eth_value), 5, "PHP_ROUND_HALF_UP")) {
+                            if (null === value || epg_round (value, 5, "PHP_ROUND_HALF_UP") < epg_round (epg_calc_with_token_markup(window.epg.eth_value), 5, "PHP_ROUND_HALF_UP")) {
                                 epg_sendTransaction_impl(function(err, result) {
                                     if (err) {
                                         console.log(err);
@@ -1421,7 +1425,7 @@ function epg_initWizard(cb) {
                                 epg_alert((token === 'ETH') ? window.epg.str_pay_eth_failure : window.epg.str_pay_token_failure);
                                 return;
                             }
-                            if (null === value || epg_round (value, 5, "PHP_ROUND_HALF_UP") < parseFloat(window.epg.eth_value)) {
+                            if (null === value || epg_round (value, 5, "PHP_ROUND_HALF_UP") < epg_round (epg_calc_with_token_markup(window.epg.eth_value), 5, "PHP_ROUND_HALF_UP")) {
                                 epg_sendTransaction_eth_step2_impl();
                             }
 //                            jQuery('#rootwizard').bootstrapWizard('show', EPG_STEP.result);
@@ -1538,18 +1542,34 @@ jQuery(document).ready(function () {
             });
         }
         epg_show_wait_icon();
-        epg_getValuePaymentEth(function(err, value) {
+        epg_getValuePaymentEth(function(err, value, currencyAddress) {
             if (err) {
                 console.log(err);
                 epg_alert(err);
                 epg_hide_wait_icon();
                 return;
             }
-            if (null === value || epg_round (value, 5, "PHP_ROUND_HALF_UP") < parseFloat(window.epg.eth_value)) {
+            if (null === value) {
                 epg_hide_wait_icon();
                 jQuery('#epg-payment-incomplete-message-wrapper').removeClass('hidden');
                 jQuery('#epg-payment-incomplete-message-wrapper').removeAttr('hidden');
                 return;
+            }
+            // ETH is encoded as address 0x0000000000000000000000000000000000000001
+            if (currencyAddress !== "0x0000000000000000000000000000000000000001") {
+                if (epg_round (value, 5, "PHP_ROUND_HALF_UP") < epg_round (epg_calc_with_token_markup(window.epg.eth_value), 5, "PHP_ROUND_HALF_UP")) {
+                    epg_hide_wait_icon();
+                    jQuery('#epg-payment-incomplete-message-wrapper').removeClass('hidden');
+                    jQuery('#epg-payment-incomplete-message-wrapper').removeAttr('hidden');
+                    return;
+                }
+            } else {
+                if (epg_round (value, 5, "PHP_ROUND_HALF_UP") < epg_round (window.epg.eth_value, 5, "PHP_ROUND_HALF_UP")) {
+                    epg_hide_wait_icon();
+                    jQuery('#epg-payment-incomplete-message-wrapper').removeClass('hidden');
+                    jQuery('#epg-payment-incomplete-message-wrapper').removeAttr('hidden');
+                    return;
+                }
             }
             jQuery('#epg-payment-success-message-wrapper').removeClass('hidden');
             jQuery('#epg-payment-success-message-wrapper').removeAttr('hidden');

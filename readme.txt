@@ -3,7 +3,7 @@ Contributors: ethereumicoio
 Tags: woocommerce, ethereum, erc20, erc223, token, e-commerce, payment, crypto, blockchain
 Requires at least: 4.7
 Tested up to: 4.9.5
-Stable tag: 2.2.2
+Stable tag: 2.3.0
 Donate link: https://etherscan.io/address/0x476Bb28Bc6D0e9De04dB5E19912C392F9a76535d
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -25,7 +25,7 @@ Features:
 * Free to use. Fixed fee per purchase
 * User friendly payment wizard
 * Automatically convert order value to Ether or ERC20/ERC223 token at checkout
-* Option for adding a percentage mark-up to the converted price
+* Option for adding a percentage mark-up to the converted price of Ether and/or ERC20 tokens to help cover currency fluctuations.
 * "Pay with Metamask" button to allow easy payment via MetaMask client. If customer do not want to use MetaMask, she can just copy and paste Value, Address, and Data fields in her favorite wallet software.
 * The `Disallow customer to pay with Ether` option is useful to accept only some token
 * Automatic transaction tracking / reconciliation and order updates
@@ -141,6 +141,11 @@ This guaranties your safety as a plugin customer. The feePercent and maxFee valu
 > We reserve the right to change the fee in the 0% to 3% range to reflect the market changes.
 
 == Changelog ==
+
+= 2.3.0 =
+
+* `Mark ERC20 token price up by %` option is added. To help cover currency fluctuations the plugin can automatically mark up converted rates for you. These are applied as percentage markup, so a 1 ERC20 Token value with a 1.00% markup will be presented to the customer as 1.01 Token.
+* email content fix
 
 = 2.2.2 =
 
