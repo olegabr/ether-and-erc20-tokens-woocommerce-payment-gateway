@@ -3,6 +3,7 @@
 namespace Ethereumico\Epg;
 
 require $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->base_path . '/vendor/autoload.php';
+require_once $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->base_path . '/vendor/prospress/action-scheduler/action-scheduler.php';
 
 use Web3\Web3;
 use Web3\Providers\HttpProvider;
@@ -247,6 +248,54 @@ class Gateway extends WC_Payment_Gateway {
         add_action('woocommerce_thankyou_ether-and-erc20-tokens-woocommerce-payment-gateway', array($this, 'thank_you_page'));
         
         add_action( 'wp_enqueue_scripts', array( $this, 'register_plugin_styles' ) );
+        
+        add_action( 'woocommerce_order_status_on-hold', array( $this, 'order_on_hold_handler' ) );
+    }
+
+    public function order_on_hold_handler($order_id) {
+        $this->enqueue_complete_order_task($order_id);
+    }
+    
+    public function enqueue_complete_order_task($order_id, $offset = 0/* seconds */) {
+        $this->cancel_complete_order_task($order_id);
+        $timestamp = time() + $offset;
+        $hook = 'ether_and_erc20_tokens_woocommerce_payment_gateway_complete_order';
+        $args = array($order_id);
+        $task_id = wc_schedule_single_action( $timestamp, $hook, $args );
+        $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log("Task complete_order with id $task_id scheduled for order: $order_id");
+    }
+    public function cancel_complete_order_task($order_id) {
+        $hook = "ether_and_erc20_tokens_woocommerce_payment_gateway_complete_order";
+        $args = array($order_id);
+        wc_unschedule_action( $hook, $args );
+        $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log("Task complete_order unscheduled for order: $order_id");
+    }
+
+    public function complete_order($order_id) {
+        $tokens_supported = esc_attr($this->settings['tokens_supported']);
+        $providerUrl = $this->getWeb3Endpoint();
+        $blockchainNetwork = esc_attr($this->settings['blockchain_network']);
+        $marketAddress = $this->getMarketAddress();
+        $paymentSuccess = $this->check_tx_status(
+            $order_id, $tokens_supported, $this->getOrderExpiredTimeout(), $providerUrl, $blockchainNetwork, $marketAddress, true
+        );
+        if (!$paymentSuccess) {
+            // re-enqueue itself to check later
+            $this->enqueue_complete_order_task($order_id, 1 * 60);
+        }
+    }
+
+    public function complete_order_internal($order_id) {
+        $tokens_supported = esc_attr($this->settings['tokens_supported']);
+        $providerUrl = $this->getWeb3Endpoint();
+        $blockchainNetwork = esc_attr($this->settings['blockchain_network']);
+        $marketAddress = $this->getMarketAddress();
+        $paymentSuccess = $this->check_tx_status(
+            $order_id, $tokens_supported, $this->getOrderExpiredTimeout(), $providerUrl, $blockchainNetwork, $marketAddress, true
+        );
+        if ($paymentSuccess) {
+            $this->cancel_complete_order_task($order_id);
+        }
     }
 
     public function valid_order_statuses_for_payment($statuses = array()) {
@@ -524,7 +573,18 @@ class Gateway extends WC_Payment_Gateway {
                 'type' => 'title',
                 'description' => sprintf(
                     __('Install the %1$sCryptocurrency Product for WooCommerce plugin%2$s!', 'ethereum-wallet')
-                    , '<a target="_blank" href="https://ethereumico.io/product/cryptocurrency-product-for-woocommerce-standard-license/">'
+                    , '<a target="_blank" href="https://ethereumico.io/product/cryptocurrency-wordpress-plugin/">'
+                    , '</a>'
+                ),
+            ),
+        );
+        $this->form_fields += array(
+            'ads5' => array(
+                'title' => __('Want to create Ethereum wallets on your Wordpress site?', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
+                'type' => 'title',
+                'description' => sprintf(
+                    __('Install the %1$sWordPress Ethereum Wallet plugin%2$s!', 'ethereum-wallet')
+                    , '<a target="_blank" href="https://ethereumico.io/product/wordpress-ethereum-wallet-plugin/">'
                     , '</a>'
                 ),
             ),
@@ -625,7 +685,7 @@ class Gateway extends WC_Payment_Gateway {
     }
     
     function check_tx_status(
-        $order_id, $tokens_supported, $orderExpiredTimeout, $event_timeout_sec
+        $order_id, $tokens_supported, $orderExpiredTimeout
         , $providerUrl, $blockchainNetwork, $marketAddress, $standalone = false
     ) {
         $order = new WC_Order($order_id);
@@ -647,14 +707,16 @@ class Gateway extends WC_Payment_Gateway {
                 if ($standalone) {
                     $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log(
                         sprintf(
-                            __('Order expired: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
+                            __('Order expired.  Order updated to failed: %s', 'ether-and-erc20-tokens-woocommerce-payment-gateway'), $order_id
                         )
                     );
                     $order->add_order_note(
                         __('Order was expired.', 'ether-and-erc20-tokens-woocommerce-payment-gateway')
                     );
+                    $order->update_status('failed', __('Order was expired.', 'ether-and-erc20-tokens-woocommerce-payment-gateway'));
                 }
-                return false;
+                // stop cron job re-enqueue
+                return true;
             }
         }
 
@@ -735,22 +797,9 @@ class Gateway extends WC_Payment_Gateway {
     public function thank_you_page($order_id) {
         // set task to check tx state and complete order if needed
         $tokens_supported = esc_attr($this->settings['tokens_supported']);
-        $providerUrl = $this->getWeb3Endpoint();
-        $blockchainNetwork = esc_attr($this->settings['blockchain_network']);
-        $marketAddress = $this->getMarketAddress();
-        $event_timeout_sec = $this->getEventTimeoutSec();
-        $params = array(
-            $order_id,
-            $tokens_supported,
-            $this->getOrderExpiredTimeout(),
-            $event_timeout_sec,
-            $providerUrl,
-            $blockchainNetwork,
-            $marketAddress
-        );
-        $paymentSuccess = $this->check_tx_status(
-            $order_id, $tokens_supported, $this->getOrderExpiredTimeout(), $event_timeout_sec, $providerUrl, $blockchainNetwork, $marketAddress, true
-        );
+        
+        // try to complete order if payment succeeded
+        $this->complete_order_internal($order_id);
 
         $eth_value = ether_and_erc20_tokens_woocommerce_payment_gateway_getEthValueByOrderId($order_id);
         list($eth_value_with_dust, $eth_value_with_dust_str) = ether_and_erc20_tokens_woocommerce_payment_gateway_getEthValueWithDustByOrderId($eth_value, $order_id);
@@ -941,13 +990,13 @@ class Gateway extends WC_Payment_Gateway {
                         </div>
                     </div>
                 </div>
-                <div id="epg-ether-alert" class="form-group hidden" hidden>
+<!--                <div id="epg-ether-alert" class="form-group hidden" hidden>
                     <div class="alert alert-warning" role="alert">
-                        <!--http://jsfiddle.net/0vzmmn0v/1/-->
+                        http://jsfiddle.net/0vzmmn0v/1/
                         <div class="fa fa-exclamation-triangle" aria-hidden="true"></div>
-                        <div><?php _e('Do not close or reload this page until payment confirmation complete.', 'ether-and-erc20-tokens-woocommerce-payment-gateway'); ?></div>
+                        <div><?php // _e('Do not close or reload this page until payment confirmation complete.', 'ether-and-erc20-tokens-woocommerce-payment-gateway'); ?></div>
                     </div>
-                </div>
+                </div>-->
                 <div class="form-group">
                     <button id="epg-ether-mm-pay" class="button btn btn-default float-right col-12 col-md-4"><?php _e('Pay with MetaMask', 'ether-and-erc20-tokens-woocommerce-payment-gateway'); ?></button>
                     <button id="epg-ether-download-metamask-button" class="button btn btn-default float-right hidden col-12 col-md-4" hidden><?php _e('Download MetaMask!', 'ether-and-erc20-tokens-woocommerce-payment-gateway'); ?></button>
@@ -1217,13 +1266,13 @@ class Gateway extends WC_Payment_Gateway {
                                 </div>
                             </div>
                         </div>
-                        <div id="epg-alert" class="form-group hidden" hidden>
+<!--                        <div id="epg-alert" class="form-group hidden" hidden>
                             <div class="alert alert-warning" role="alert">
-                                <!--http://jsfiddle.net/0vzmmn0v/1/-->
+                                http://jsfiddle.net/0vzmmn0v/1/
                                 <div class="fa fa-exclamation-triangle" aria-hidden="true"></div>
-                                <div><?php _e('Do not close or reload this page until payment confirmation complete.', 'ether-and-erc20-tokens-woocommerce-payment-gateway'); ?></div>
+                                <div><?php // _e('Do not close or reload this page until payment confirmation complete.', 'ether-and-erc20-tokens-woocommerce-payment-gateway'); ?></div>
                             </div>
-                        </div>
+                        </div>-->
                         <div class="container-fluid" style="padding-left: 0; padding-right: 0;">
                             <div class="row" style="width:100%; margin-left: 0; margin-right: 0;">
                                 <button id="epg-button-previous" class="button previous hidden col-12 col-md-2" hidden><?php _e('Previous', 'ether-and-erc20-tokens-woocommerce-payment-gateway'); ?></button>
@@ -1245,11 +1294,11 @@ class Gateway extends WC_Payment_Gateway {
             $min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
             wp_enqueue_script(
                 'wooetherc20paymentgateway', 
-                $base_url . "/js/ether-and-erc20-tokens-woocommerce-payment-gateway{$min}.js", array('jquery', 'bootstrap.wizard', 'web3', 'jquery.qrcode'), '2.3.0'
+                $base_url . "/js/ether-and-erc20-tokens-woocommerce-payment-gateway{$min}.js", array('jquery', 'bootstrap.wizard', 'web3', 'jquery.qrcode'), '2.3.1'
             );
             wp_enqueue_style(
                 'wooetherc20paymentgateway', 
-                $base_url . "/css/ether-and-erc20-tokens-woocommerce-payment-gateway.css", array('bootstrap-ether-and-erc20-tokens-woocommerce-payment-gateway'), '2.3.0'
+                $base_url . "/css/ether-and-erc20-tokens-woocommerce-payment-gateway.css", array('bootstrap-ether-and-erc20-tokens-woocommerce-payment-gateway'), '2.3.1'
             );
 
             $web3Endpoint = $this->getWeb3Endpoint();
@@ -1272,7 +1321,7 @@ class Gateway extends WC_Payment_Gateway {
                 'order_id' => $order_id,
                 'web3Endpoint' => esc_html($web3Endpoint),
                 // translations
-                'str_page_unload_text' => __('Do not close or reload this page until payment confirmation complete.', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
+//                'str_page_unload_text' => __('Do not close or reload this page until payment confirmation complete.', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
                 'str_make_deposit_button_text' => __('Deposit with MetaMask', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
                 'str_pay_button_text' => __('Pay with MetaMask', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
                 'str_download_metamask' => __('Download MetaMask', 'ether-and-erc20-tokens-woocommerce-payment-gateway'),
@@ -1384,15 +1433,9 @@ class Gateway extends WC_Payment_Gateway {
             return esc_attr($this->settings['payment_address']);
         }
 
-        public function getEventTimeoutSec() {
-            // TODO: use tx_check_period
-            return 60;
-//        return $this->settings['tx_check_period'];
-        }
-
         public function getOrderExpiredTimeout() {
             // TODO: use order_expire_timeout
-            return 30 * 24 * 3600; // one month
+            return 1 * 24 * 3600; // one day
 //        return $this->settings['order_expire_timeout'];
         }
 

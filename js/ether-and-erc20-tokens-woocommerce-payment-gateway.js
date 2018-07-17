@@ -721,12 +721,12 @@ function epg_sendTransaction_eth_step2_impl() {
 
 function epg_show_wait_icon() {
     jQuery('#epg-spinner').addClass('is-active');
-    jQuery('#epg-alert').removeClass('hidden');
-    jQuery('#epg-alert').removeAttr('hidden');
+//    jQuery('#epg-alert').removeClass('hidden');
+//    jQuery('#epg-alert').removeAttr('hidden');
     
     jQuery('#epg-ether-spinner').addClass('is-active');
-    jQuery('#epg-ether-alert').removeClass('hidden');
-    jQuery('#epg-ether-alert').removeAttr('hidden');
+//    jQuery('#epg-ether-alert').removeClass('hidden');
+//    jQuery('#epg-ether-alert').removeAttr('hidden');
     
     jQuery('#epg-token').attr('disabled', 'disabled');
 
@@ -745,12 +745,12 @@ function epg_hide_wait_icon(step) {
         step = epg_get_step_number();
     }
     jQuery('#epg-spinner').removeClass('is-active');
-    jQuery('#epg-alert').addClass('hidden');
-    jQuery('#epg-alert').attr('hidden', ' hidden');
+//    jQuery('#epg-alert').addClass('hidden');
+//    jQuery('#epg-alert').attr('hidden', ' hidden');
     
     jQuery('#epg-ether-spinner').removeClass('is-active');
-    jQuery('#epg-ether-alert').addClass('hidden');
-    jQuery('#epg-ether-alert').attr('hidden', ' hidden');
+//    jQuery('#epg-ether-alert').addClass('hidden');
+//    jQuery('#epg-ether-alert').attr('hidden', ' hidden');
     
     jQuery('#epg-token').removeAttr('disabled');
 
@@ -1013,7 +1013,7 @@ function epg_pay_ether() {
     if ('undefined' === typeof window.epg['web3metamask']) {
         return;
     }
-    if (!jQuery('#epg-ether-alert').hasClass('hidden') && !jQuery('#epg-ether-alert').is('[hidden]')) {
+    if (jQuery('#epg-ether-spinner').hasClass('is-active') || jQuery('#epg-spinner').hasClass('is-active')) {
         // do not proceed if some task is in progress
         return false;
     }
@@ -1196,7 +1196,11 @@ function epg_copyAddress(e) {
 	var $temp = jQuery("<input>");
 	jQuery("body").append($temp);
 
-	var id = jQuery(e.target).data("input-id");
+    var target = e.target;
+    if ("BUTTON" !== e.target.tagName) {
+        target = target.parentElement;
+    }
+	var id = jQuery(target).data("input-id");
 	console.log("Copy from: ", id);
 
 	var value = jQuery("#" + id).val();
@@ -1341,7 +1345,7 @@ function epg_initWizard(cb) {
         },
         onPrevious: function(tab, navigation, index) {
             console.log('prev: ' + index);
-            if (!jQuery('#epg-alert').hasClass('hidden') && !jQuery('#epg-alert').is('[hidden]')) {
+            if (jQuery('#epg-ether-spinner').hasClass('is-active') || jQuery('#epg-spinner').hasClass('is-active')) {
                 // do not change tab if some task is in progress
                 return false;
             }
@@ -1351,7 +1355,7 @@ function epg_initWizard(cb) {
         },
         onNext: function(tab, navigation, index) {
             console.log('next: ' + index);
-            if (!jQuery('#epg-alert').hasClass('hidden') && !jQuery('#epg-alert').is('[hidden]')) {
+            if (jQuery('#epg-ether-spinner').hasClass('is-active') || jQuery('#epg-spinner').hasClass('is-active')) {
                 // do not change tab if some task is in progress
                 return false;
             }
@@ -1611,17 +1615,17 @@ jQuery(document).ready(function () {
         });
 	}
     
-    // https://stackoverflow.com/a/19538231/4256005
-    window.addEventListener("beforeunload", function (e) {
-        if (!jQuery('#epg-ether-alert').hasClass('hidden') && !jQuery('#epg-ether-alert').is('[hidden]')) {
-            // some task is in progress
-            
-            var confirmationMessage = window.epg.str_page_unload_text;
-
-            (e || window.event).returnValue = confirmationMessage; //Gecko + IE
-            return confirmationMessage;                            //Webkit, Safari, Chrome
-        }
-    });
+//    // https://stackoverflow.com/a/19538231/4256005
+//    window.addEventListener("beforeunload", function (e) {
+//        if (jQuery('#epg-ether-spinner').hasClass('is-active') || jQuery('#epg-spinner').hasClass('is-active')) {
+//            // some task is in progress
+//            
+//            var confirmationMessage = window.epg.str_page_unload_text;
+//
+//            (e || window.event).returnValue = confirmationMessage; //Gecko + IE
+//            return confirmationMessage;                            //Webkit, Safari, Chrome
+//        }
+//    });
 
     // Init QR codes
     jQuery('.epg-ether-canvas-qr1').qrcode({

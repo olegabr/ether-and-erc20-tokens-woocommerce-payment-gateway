@@ -3,7 +3,7 @@ Contributors: ethereumicoio
 Tags: woocommerce, ethereum, erc20, erc223, token, e-commerce, payment, crypto, blockchain
 Requires at least: 4.7
 Tested up to: 4.9.5
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 Donate link: https://etherscan.io/address/0x476Bb28Bc6D0e9De04dB5E19912C392F9a76535d
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -141,6 +141,12 @@ This guaranties your safety as a plugin customer. The feePercent and maxFee valu
 > We reserve the right to change the fee in the 0% to 3% range to reflect the market changes.
 
 == Changelog ==
+
+
+= 2.3.1 =
+
+* Order would be confirmed even if user closed the payment page before transaction was confirmed
+* Copy buttons fix if clicked on icon
 
 = 2.3.0 =
 

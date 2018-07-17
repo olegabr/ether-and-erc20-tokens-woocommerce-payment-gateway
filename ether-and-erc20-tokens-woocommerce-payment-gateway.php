@@ -4,7 +4,7 @@
 Plugin Name: Ether and ERC20 tokens WooCommerce Payment Gateway
 Plugin URI: https://wordpress.org/plugins/ether-and-erc20-tokens-woocommerce-payment-gateway
 Description: Ether and ERC20 tokens WooCommerce Payment Gateway enables customers to pay with Ether or any ERC20 or ERC223 token on your WooCommerce store.
-Version: 2.3.0
+Version: 2.3.1
 WC requires at least: 2.6.0
 WC tested up to: 3.4
 Author: ethereumicoio
@@ -50,6 +50,8 @@ if ( version_compare( phpversion(), '7.0', '<' ) ) {
         $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway'] = new \Ethereumico\Epg\Main( plugins_url( '', __FILE__ ), plugin_dir_path( __FILE__ ) );
         $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->run();
         
+        require_once dirname( __FILE__ ) . '/vendor/prospress/action-scheduler/action-scheduler.php';
+        
         // Place in Option List on Settings > Plugins page 
         function ether_and_erc20_tokens_woocommerce_payment_gateway_actlinks( $links, $file ) {
             // Static so we don't call plugin_basename on every plugin row.
@@ -67,6 +69,17 @@ if ( version_compare( phpversion(), '7.0', '<' ) ) {
             return $links;
         }
         add_filter( 'plugin_action_links', 'ether_and_erc20_tokens_woocommerce_payment_gateway_actlinks', 10, 2 );
+
+        function ether_and_erc20_tokens_woocommerce_payment_gateway_complete_order($order_id) {
+            $payment_gateway = wc_get_payment_gateway_by_order( $order_id );
+            if (!$payment_gateway) {
+                $GLOBALS['ether-and-erc20-tokens-woocommerce-payment-gateway']->log("ether_and_erc20_tokens_woocommerce_payment_gateway_complete_order failed to get payment gateway for order: $order_id");
+                return;
+            }
+            $payment_gateway->complete_order($order_id);
+        }
+        add_action("ether_and_erc20_tokens_woocommerce_payment_gateway_complete_order", 'ether_and_erc20_tokens_woocommerce_payment_gateway_complete_order', 0, 1);
+
     } else {
         add_action( 'admin_init', 'epg_plugin_deactivate' );
         add_action( 'admin_notices', 'epg_plugin_admin_notice_woocommerce' );
